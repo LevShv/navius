@@ -9,7 +9,36 @@ abstract class LocationDataSource {
 class LocationDataSourceImpl implements LocationDataSource {
   @override
   Future<Position> getCurrentLocation() async {
-    return await Geolocator.getCurrentPosition();
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      print('Service enabled: $serviceEnabled');
+
+      if (!serviceEnabled) {
+        throw Exception('Location service is disabled');
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      print('Current permission: $permission');
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        print('Permission after request: $permission');
+      }
+
+      if (permission == LocationPermission.deniedForever || permission == LocationPermission.denied) {
+        throw Exception('Location permission denied');
+      }
+
+      Position? position = await Geolocator.getCurrentPosition();
+
+      print('Получена новая позиция: ${position.latitude}, ${position.longitude}');
+      return position;
+
+    } catch (e, stack) {
+      print('Ошибка getCurrentLocation: $e');
+      print(stack);
+      rethrow;
+    }
   }
 
   @override
