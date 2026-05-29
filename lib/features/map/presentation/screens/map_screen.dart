@@ -28,21 +28,30 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   final MapController _mapController = MapController();
+  bool _isMoving = false; 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Navius')),
       body: BlocConsumer<MapBloc, MapState>(
+        listenWhen: (previous, current) =>
+            previous.currentLocation != current.currentLocation,
+        
         listener: (context, state) {
-          if (state.currentLocation != null) {
-            _mapController.move(
-              LatLng(
-                state.currentLocation!.latitude,
-                state.currentLocation!.longitude,
-              ),
-              14.0,
-            );
+          if (state.currentLocation != null && !_isMoving) {
+            _isMoving = true;
+            
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _mapController.move(
+                LatLng(
+                  state.currentLocation!.latitude,
+                  state.currentLocation!.longitude,
+                ),
+                14.0,
+              );
+              _isMoving = false;
+            });
           }
         },
         builder: (context, state) {
@@ -51,7 +60,7 @@ class _MapViewState extends State<MapView> {
           }
 
           final location = state.currentLocation;
-          
+
           return FlutterMap(
             mapController: _mapController,
             options: MapOptions(
@@ -86,15 +95,17 @@ class _MapViewState extends State<MapView> {
       ),
       floatingActionButton: BlocBuilder<MapBloc, MapState>(
         builder: (context, state) {
+          final hasLocation = state.currentLocation != null;
+
           return FloatingActionButton(
-            onPressed: state.currentLocation != null
-                ? () => _mapController.move(
-                    LatLng(
-                      state.currentLocation!.latitude,
-                      state.currentLocation!.longitude,
-                    ),
-                    14.0,
-                  )
+            onPressed: hasLocation
+                ? () {
+                    final loc = state.currentLocation!;
+                    _mapController.move(
+                      LatLng(loc.latitude, loc.longitude),
+                      14.0,
+                    );
+                  }
                 : null,
             child: const Icon(Icons.my_location),
           );
