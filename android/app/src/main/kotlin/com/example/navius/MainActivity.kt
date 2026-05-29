@@ -1,0 +1,5 @@
+package com.example.navius
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()
