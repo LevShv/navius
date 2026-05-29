@@ -34,13 +34,13 @@ class MapScreen extends StatelessWidget {
       ),
       body: FlutterMap(
         options: MapOptions(
-          initialCenter: const LatLng(55.751244, 37.618423), // Москва
+          initialCenter: const LatLng(55.751244, 37.618423), 
           initialZoom: 12.0,
         ),
         children: [
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.example.navius', // Используйте имя вашего приложения
+            userAgentPackageName: 'com.example.navius', 
           ),
         ],
       ),
