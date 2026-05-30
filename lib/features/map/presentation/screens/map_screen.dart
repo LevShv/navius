@@ -35,22 +35,18 @@ class _MapViewState extends State<MapView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Navius')),
       body: BlocConsumer<MapBloc, MapState>(
-        listenWhen: (previous, current) =>
-            previous.currentLocation != current.currentLocation,
-        
+
         listener: (context, state) {
-          if (state.currentLocation != null && !_isMoving) {
-            _isMoving = true;
+          if (state.currentLocation != null) {
+            final lat = state.currentLocation!.latitude;
+            final lng = state.currentLocation!.longitude;
             
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _mapController.move(
-                LatLng(
-                  state.currentLocation!.latitude,
-                  state.currentLocation!.longitude,
-                ),
-                14.0,
-              );
-              _isMoving = false;
+            print('🎯 LISTENER сработал → Двигаем карту на: $lat, $lng');
+
+            // Делаем с небольшой задержкой — часто помогает
+            Future.delayed(const Duration(milliseconds: 100), () {
+              _mapController.move(LatLng(lat, lng), 14.0);
+              print('📍 move() выполнен');
             });
           }
         },
@@ -95,18 +91,10 @@ class _MapViewState extends State<MapView> {
       ),
       floatingActionButton: BlocBuilder<MapBloc, MapState>(
         builder: (context, state) {
-          final hasLocation = state.currentLocation != null;
-
           return FloatingActionButton(
-            onPressed: hasLocation
-                ? () {
-                    final loc = state.currentLocation!;
-                    _mapController.move(
-                      LatLng(loc.latitude, loc.longitude),
-                      14.0,
-                    );
-                  }
-                : null,
+            onPressed: () {
+                    context.read<MapBloc>().add(CenterOnUser());
+                  },
             child: const Icon(Icons.my_location),
           );
         },
