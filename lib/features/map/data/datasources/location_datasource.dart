@@ -43,6 +43,12 @@ class LocationDataSourceImpl implements LocationDataSource {
 
   @override
   Stream<Position> getPositionStream() {
-    return Geolocator.getPositionStream();
+    return Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: 5, 
+        //timeLimit: Duration(seconds: 2), 
+      ),
+    ); 
   }
 }

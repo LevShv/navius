@@ -6,12 +6,14 @@ class MapState extends Equatable {
     final bool isLoading;
     final String? error;
     final bool forceCenter;
+    final bool isTracking;
 
     const MapState({
         this.currentLocation,
         this.isLoading = false,
         this.error,
         this.forceCenter = false,
+        this.isTracking = false,
     });
 
     MapState copyWith({
@@ -19,15 +21,23 @@ class MapState extends Equatable {
         bool? isLoading,
         String? error,
         bool? forceCenter,
+        bool? isTracking,
     }) {
         return MapState(
             currentLocation: currentLocation ?? this.currentLocation,
             isLoading: isLoading ?? this.isLoading,
             error: error ?? this.error,
             forceCenter: forceCenter ?? false,
+            isTracking: isTracking ?? this.isTracking,
         );
     }
 
     @override
-    List<Object?> get props => [currentLocation, isLoading, error, forceCenter];
+    List<Object?> get props => [
+      currentLocation, 
+      isLoading, 
+      error, 
+      forceCenter,
+      isTracking
+    ];
 }

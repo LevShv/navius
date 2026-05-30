@@ -48,6 +48,7 @@ class _MapViewState extends State<MapView> {
             });
 
             context.read<MapBloc>().add(ResetForceCenter());
+             
           }
         },
         builder: (context, state) {
@@ -91,11 +92,33 @@ class _MapViewState extends State<MapView> {
       ),
       floatingActionButton: BlocBuilder<MapBloc, MapState>(
         builder: (context, state) {
-          return FloatingActionButton(
-            onPressed: () {
-                    context.read<MapBloc>().add(CenterOnUser());
-                  },
-            child: const Icon(Icons.my_location),
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton(
+                heroTag: 'center',
+                onPressed: () {
+                  context.read<MapBloc>().add(CenterOnUser());
+                },
+                child: const Icon(Icons.my_location),
+              ),
+              const SizedBox(height: 10),
+              FloatingActionButton(
+                heroTag: 'tracking',
+                mini: true,
+                onPressed: () {
+                  final bloc = context.read<MapBloc>();
+                  if (bloc.state.isTracking) {
+                    bloc.add(StopLocationTracking());
+                  } else {
+                    bloc.add(StartLocationTracking());
+                  }
+                },
+                child: Icon(
+                  state.isTracking ? Icons.pause : Icons.play_arrow,
+                ),
+              ),
+            ],
           );
         },
       ),
