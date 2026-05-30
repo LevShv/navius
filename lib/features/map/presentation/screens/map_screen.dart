@@ -37,17 +37,17 @@ class _MapViewState extends State<MapView> {
       body: BlocConsumer<MapBloc, MapState>(
 
         listener: (context, state) {
-          if (state.currentLocation != null) {
+          if (state.currentLocation != null && state.forceCenter) {
             final lat = state.currentLocation!.latitude;
             final lng = state.currentLocation!.longitude;
             
             print('🎯 LISTENER сработал → Двигаем карту на: $lat, $lng');
 
-            // Делаем с небольшой задержкой — часто помогает
             Future.delayed(const Duration(milliseconds: 100), () {
               _mapController.move(LatLng(lat, lng), 14.0);
-              print('📍 move() выполнен');
             });
+
+            context.read<MapBloc>().add(ResetForceCenter());
           }
         },
         builder: (context, state) {

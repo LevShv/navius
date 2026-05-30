@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:navius/features/map/domain/entities/location.dart';
 import 'map_event.dart';
 import 'map_state.dart';
 import '../../domain/usecases/get_current_location.dart';
@@ -9,6 +10,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
   MapBloc({required this.getCurrentLocation}) : super(const MapState()) {
       on<LoadLocation>(_onLoadLocation);
       on<CenterOnUser>(_onCenterOnUser);
+      on<ResetForceCenter>(_onResetForceCenter);
   }
 
   Future<void> _onLoadLocation(
@@ -30,20 +32,19 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         error: e.toString(),
       ));
     }
-  }
-  
+  }  
 
   void _onCenterOnUser(
     CenterOnUser event,
     Emitter<MapState> emit,
   ) async {
-    //emit(state.copyWith(isLoading: true));
     try {
       final location = await getCurrentLocation();
 
-      emit(MapState(
+      emit(state.copyWith(
         currentLocation: location,
         isLoading: false,
+        forceCenter: true,
         error: null,
       ));
     } catch (e){
@@ -54,4 +55,11 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       ));
     }
   }    
+
+  void _onResetForceCenter(
+    ResetForceCenter event,
+    Emitter<MapState> emit,
+  ) {
+    emit(state.copyWith(forceCenter: false));
+  }
 }

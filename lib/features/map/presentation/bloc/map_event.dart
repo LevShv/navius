@@ -9,3 +9,4 @@ abstract class MapEvent extends Equatable{
 
 class LoadLocation extends MapEvent {}
 class CenterOnUser extends MapEvent {}
+class ResetForceCenter extends MapEvent {}
