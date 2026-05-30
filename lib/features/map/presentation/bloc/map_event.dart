@@ -18,3 +18,10 @@ class LocationUpdated extends MapEvent {
   final Location location;
   LocationUpdated(this.location);
 }
+
+class BuildRoute extends MapEvent {
+  final Location destination;
+  const BuildRoute(this.destination);
+}
+
+class ClearRoute extends MapEvent {}

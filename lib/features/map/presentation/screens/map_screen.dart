@@ -6,6 +6,7 @@ import '../bloc/map_bloc.dart';
 import '../bloc/map_event.dart';
 import '../bloc/map_state.dart';
 import '../../../../core/di/injection.dart';
+import '../../domain/entities/location.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
@@ -35,7 +36,6 @@ class _MapViewState extends State<MapView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Navius')),
       body: BlocConsumer<MapBloc, MapState>(
-
         listener: (context, state) {
           if (state.currentLocation != null && state.forceCenter) {
             final lat = state.currentLocation!.latitude;
@@ -65,11 +65,38 @@ class _MapViewState extends State<MapView> {
                   ? LatLng(location.latitude, location.longitude)
                   : const LatLng(55.751244, 37.618423),
               initialZoom: 14.0,
+              onLongPress: (tapPosition, point) {  
+                context.read<MapBloc>().add(BuildRoute(
+                  Location(
+                    latitude: point.latitude,
+                    longitude: point.longitude,
+                  ),
+                ));
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Маршрут строится...'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              },
             ),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.navius',
+              ),
+              if (state.currentRoute != null)
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: state.currentRoute!.points.map((point) => 
+                      LatLng(point.latitude, point.longitude)
+                    ).toList(),
+                    color: Colors.blue,
+                    strokeWidth: 4.0,
+                  ),
+                ],
               ),
               if (location != null)
                 MarkerLayer(

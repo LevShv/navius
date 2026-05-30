@@ -5,19 +5,25 @@ import 'dart:async';
 import 'map_event.dart';
 import 'map_state.dart';
 import '../../domain/usecases/get_current_location.dart';
+import '../../domain/usecases/get_route.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final GetCurrentLocation getCurrentLocation;
   final GetLocationStream getLocationStream;
   StreamSubscription<Location>? _locationSubscription;
+  final GetRoute getRoute;
 
   MapBloc({
     required this.getCurrentLocation,
     required this.getLocationStream,
+    required this.getRoute,
   }) : super(const MapState()) {
       on<LoadLocation>(_onLoadLocation);
       on<CenterOnUser>(_onCenterOnUser);
       on<LocationUpdated>(_onLocationUpdated);
+      on<BuildRoute>(_onBuildRoute);
+      on<ClearRoute>(_onClearRoute);
+      on<ResetForceCenter>(_onResetForceCenter);
 
       add(LoadLocation());
   }
@@ -52,7 +58,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     _locationSubscription?.cancel();
     _locationSubscription = getLocationStream().listen(
       (location) {
-        print('📍 Новая позиция: ${location.latitude}, ${location.longitude}');
         add(LocationUpdated(location));
       },
       onError: (error) {
@@ -96,5 +101,50 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     emit(state.copyWith(
       currentLocation: event.location,
     ));
+  }
+
+  Future<void> _onBuildRoute(
+    BuildRoute event,
+    Emitter<MapState> emit,
+  ) async {
+    if (state.currentLocation == null) {
+      emit(state.copyWith(error: 'Нет текущей позиции'));
+      return;
+    }
+
+    emit(state.copyWith(isLoading: true));
+
+    try {
+      final route = await getRoute(
+        start: state.currentLocation!,
+        end: event.destination, 
+      );
+
+        emit(state.copyWith(
+        currentRoute: route,
+        isLoading: false,
+        forceCenter: true,
+      ));
+    }
+    catch (e) {
+        emit(state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      ));
+    }
+  }
+
+  void _onClearRoute(
+    ClearRoute event,
+    Emitter<MapState> emit,
+  ) {
+    emit(state.copyWith(currentRoute: null));
+  }
+
+  void _onResetForceCenter(
+    ResetForceCenter event,
+    Emitter<MapState> emit,
+  ) {
+    emit(state.copyWith(forceCenter: false));
   }
 }

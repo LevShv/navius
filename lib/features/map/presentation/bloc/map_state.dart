@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/location.dart';
+import '../../domain/entities/route.dart';
 
 class MapState extends Equatable {
     final Location? currentLocation;
@@ -7,6 +8,7 @@ class MapState extends Equatable {
     final String? error;
     final bool forceCenter;
     final bool isTracking;
+    final RouteInfo? currentRoute; 
 
     const MapState({
         this.currentLocation,
@@ -14,6 +16,7 @@ class MapState extends Equatable {
         this.error,
         this.forceCenter = false,
         this.isTracking = false,
+        this.currentRoute,
     });
 
     MapState copyWith({
@@ -22,6 +25,7 @@ class MapState extends Equatable {
         String? error,
         bool? forceCenter,
         bool? isTracking,
+        RouteInfo? currentRoute,
     }) {
         return MapState(
             currentLocation: currentLocation ?? this.currentLocation,
@@ -29,6 +33,7 @@ class MapState extends Equatable {
             error: error ?? this.error,
             forceCenter: forceCenter ?? false,
             isTracking: isTracking ?? this.isTracking,
+            currentRoute: currentRoute ?? this.currentRoute,
         );
     }
 
@@ -38,6 +43,7 @@ class MapState extends Equatable {
       isLoading, 
       error, 
       forceCenter,
-      isTracking
+      isTracking,
+      currentRoute,
     ];
 }
