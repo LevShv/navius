@@ -103,21 +103,7 @@ class _MapViewState extends State<MapView> {
                 child: const Icon(Icons.my_location),
               ),
               const SizedBox(height: 10),
-              FloatingActionButton(
-                heroTag: 'tracking',
-                mini: true,
-                onPressed: () {
-                  final bloc = context.read<MapBloc>();
-                  if (bloc.state.isTracking) {
-                    bloc.add(StopLocationTracking());
-                  } else {
-                    bloc.add(StartLocationTracking());
-                  }
-                },
-                child: Icon(
-                  state.isTracking ? Icons.pause : Icons.play_arrow,
-                ),
-              ),
+              
             ],
           );
         },
