@@ -8,6 +8,7 @@ import 'map_state.dart';
 import '../../domain/usecases/get_current_location.dart';
 import '../../domain/usecases/get_route.dart';
 import '../../domain/utils/route_projection.dart';
+import '../../domain/utils/distance_calculator.dart' as calc;
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final GetCurrentLocation getCurrentLocation;
@@ -98,19 +99,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }    
 
-  void _onLocationUpdated(
-    LocationUpdated event,
-    Emitter<MapState> emit,
-  ) {
-    emit(state.copyWith(
-      currentLocation: event.location,
-    ));
-
-    if (state.currentRoute != null){
-      add(UpdateRouteProgress(event.location));      
-    }
-  }
-
   Future<void> _onBuildRoute(
     BuildRoute event,
     Emitter<MapState> emit,
@@ -128,26 +116,38 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         end: event.destination, 
       );
 
-        emit(state.copyWith(
+      emit(state.copyWith(
         currentRoute: route,
         isLoading: false,
         forceCenter: true,
+        isRouteCompleted: false,
       ));
-    }
-    catch (e) {
-        emit(state.copyWith(
+
+      if (state.currentLocation != null) {
+        final projection = RouteProjection.projectOnRoute(
+          state.currentLocation!,
+          route.points,
+        );
+
+        emit(state.copyWith(                  
+          currentSegmentIndex: projection.segmentIndex,
+          projectedLocation: projection.projectedPoint,
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
         isLoading: false,
         error: e.toString(),
       ));
     }
   }
-
-  void _onClearRoute(
-    ClearRoute event,
-    Emitter<MapState> emit,
-  ) {
+  
+  void _onClearRoute(ClearRoute event, Emitter<MapState> emit) {
     emit(state.copyWith(
-      currentRoute: null));
+      currentRoute: null,
+      currentSegmentIndex: 0,
+      projectedLocation: null,
+    ));
   }
 
   void _onResetForceCenter(
@@ -157,47 +157,68 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     emit(state.copyWith(forceCenter: false));
   }
 
+  void _onLocationUpdated(
+    LocationUpdated event,
+    Emitter<MapState> emit,
+  ) {
+    final updatedState = state.copyWith(
+      currentLocation: event.location,
+    );
+    emit(updatedState);
+
+    _updateRouteProgressIfNeeded(event.location, updatedState, emit);
+  }
+
   void _onUpdateRouteProgress(
     UpdateRouteProgress event,
     Emitter<MapState> emit,
   ) {
-    if (state.currentRoute == null) {
-      return;
-    }
-
-    final projection =
-        RouteProjection.projectOnRoute(
-      event.currentLocation,
-      state.currentRoute!.points,
+    final updatedState = state.copyWith(
+      currentLocation: event.currentLocation,
     );
+    emit(updatedState);
 
-    emit(
-      state.copyWith(
-        currentSegmentIndex:
-            projection.segmentIndex,
+    _updateRouteProgressIfNeeded(event.currentLocation, updatedState, emit);
+  }
 
-        projectedLocation:
-            projection.projectedPoint,
-      ),
-    );
-    final destination = state.currentRoute!.points.last;
-    final distanceToFinish =
-        calc.DistanceCalculator.between(
-      event.currentLocation,
+  void _updateRouteProgressIfNeeded(
+    Location location,
+    MapState currentState,
+    Emitter<MapState> emit,
+  ) {
+    if (currentState.isRouteCompleted) return;
+
+    final currentRoute = currentState.currentRoute;
+    if (currentRoute == null) return;
+
+    final destination = currentRoute.points.last;
+    final distanceToFinish = calc.DistanceCalculator.betweenLocations(
+      location,
       Location(
         latitude: destination.latitude,
         longitude: destination.longitude,
       ),
     );
 
-    print(
-      'distanceToFinish = $distanceToFinish',
+    if (distanceToFinish < 20) {
+      print('Маршрут завершен');
+      emit(currentState.copyWith(
+        currentRoute: null,
+        currentSegmentIndex: 0,
+        projectedLocation: null,
+        isRouteCompleted: true,
+      ));
+      return;
+    }
+
+    final projection = RouteProjection.projectOnRoute(
+      location,
+      currentRoute.points,
     );
 
-    if (distanceToFinish < 20) {
-      print('Маршрут завершён');
-
-      add(ClearRoute());
-    }
+    emit(currentState.copyWith(
+      currentSegmentIndex: projection.segmentIndex,
+      projectedLocation: projection.projectedPoint,
+    ));
   }
 }

@@ -11,6 +11,8 @@ class MapState extends Equatable {
     final RouteInfo? currentRoute;
     final int? currentSegmentIndex;
     final Location? projectedLocation;
+    final bool isRouteCompleted;
+    
 
     const MapState({
         this.currentLocation,
@@ -21,6 +23,7 @@ class MapState extends Equatable {
         this.currentRoute,
         this.currentSegmentIndex = 0,
         this.projectedLocation,
+        this.isRouteCompleted = false,
     });
 
     MapState copyWith({
@@ -32,6 +35,7 @@ class MapState extends Equatable {
         RouteInfo? currentRoute,
         int? currentSegmentIndex,
         Location? projectedLocation,
+        bool? isRouteCompleted,
         
     }) {
         return MapState(
@@ -41,8 +45,9 @@ class MapState extends Equatable {
             forceCenter: forceCenter ?? false,
             isTracking: isTracking ?? this.isTracking,
             currentRoute: currentRoute ?? this.currentRoute,
-            currentSegmentIndex: currentSegmentIndex ?? currentSegmentIndex,
+            currentSegmentIndex: currentSegmentIndex ?? this.currentSegmentIndex,
             projectedLocation: projectedLocation ?? this.projectedLocation,
+            isRouteCompleted: isRouteCompleted ?? this.isRouteCompleted,
 
         );
     }
@@ -57,5 +62,6 @@ class MapState extends Equatable {
       currentRoute,
       currentSegmentIndex,
       projectedLocation,
+      isRouteCompleted,
     ];
 }

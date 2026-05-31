@@ -85,84 +85,58 @@ class _MapViewState extends State<MapView> {
                 userAgentPackageName: 'com.example.navius',
               ),
               if (state.currentRoute != null &&
-                state.projectedLocation != null)
-              Builder(
-                builder: (_) {
+                  !state.isRouteCompleted)
+                Builder(
+                  builder: (_) {
 
-                  final greenPoints = <LatLng>[];
-
-                  greenPoints.addAll(state.currentRoute!.points
-                    .take(
-                      (state.currentSegmentIndex ?? 0) + 1,
-                    )
-                    .map(
-                      (p) => LatLng(
-                        p.latitude,
-                        p.longitude,
+                    final bluePoints = <LatLng>[
+                      LatLng(
+                        state.projectedLocation!.latitude,
+                        state.projectedLocation!.longitude,
                       ),
-                    ),
-                  );
+                    ];
 
-                  greenPoints.add(
-                    LatLng(
-                      state.projectedLocation!.latitude,
-                      state.projectedLocation!.longitude,
-                    ),
-                  );
-
-                  final bluePoints = <LatLng>[
-                    LatLng(
-                      state.projectedLocation!.latitude,
-                      state.projectedLocation!.longitude,
-                    ),
-                  ];
-
-                  bluePoints.addAll(
-                    state.currentRoute!.points
-                        .skip(
-                          (state.currentSegmentIndex ?? 0) + 1,
-                        )
-                        .map(
-                          (p) => LatLng(
-                            p.latitude,
-                            p.longitude,
+                    bluePoints.addAll(
+                      state.currentRoute!.points
+                          .skip(
+                            (state.currentSegmentIndex ?? 0) + 1,
+                          )
+                          .map(
+                            (p) => LatLng(
+                              p.latitude,
+                              p.longitude,
+                            ),
                           ),
-                        ),
-                  );
+                    );
 
-                  return PolylineLayer(
-                    polylines: [
+                    return PolylineLayer(
+                      polylines: [
 
-                      Polyline(
-                        points: state.currentRoute!.points
-                            .map(
-                              (p) => LatLng(
-                                p.latitude,
-                                p.longitude,
-                              ),
-                            )
-                            .toList(),
-                        color: Colors.grey.withOpacity(0.3),
-                        strokeWidth: 6,
-                      ),
-
-                      if (greenPoints.length > 1)
+                        // весь маршрут серым
                         Polyline(
-                          points: greenPoints,
-                          color: Colors.green,
+                          points: state.currentRoute!.points
+                              .map(
+                                (p) => LatLng(
+                                  p.latitude,
+                                  p.longitude,
+                                ),
+                              )
+                              .toList(),
+                          color: Colors.grey.withOpacity(0.3),
                           strokeWidth: 6,
                         ),
 
-                      if (bluePoints.length > 1)
-                        Polyline(
-                          points: bluePoints,
-                          color: Colors.blue,
-                          strokeWidth: 6,
-                        ),
-                    ],
-                  );
-                },
-              ),
+                        // остаток маршрута синим
+                        if (bluePoints.length > 1)
+                          Polyline(
+                            points: bluePoints,
+                            color: Colors.blue,
+                            strokeWidth: 6,
+                          ),
+                      ],
+                    );
+                  },
+                ),
               
               if (location != null)
                 MarkerLayer(
