@@ -48,7 +48,7 @@ class MapState extends Equatable {
             currentLocation: currentLocation ?? this.currentLocation,
             isLoading: isLoading ?? this.isLoading,
             error: error ?? this.error,
-            forceCenter: forceCenter ?? false,
+            forceCenter: forceCenter ?? this.forceCenter,
             isTracking: isTracking ?? this.isTracking,
             currentRoute: currentRoute ?? this.currentRoute,
             currentSegmentIndex: currentSegmentIndex ?? this.currentSegmentIndex,

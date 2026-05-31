@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:navius/features/map/domain/usecases/get_location_stream.dart';
 import 'package:navius/features/map/domain/entities/location.dart';
@@ -26,9 +27,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       on<LocationUpdated>(_onLocationUpdated);
       on<BuildRoute>(_onBuildRoute);
       on<ClearRoute>(_onClearRoute);
-      on<ResetForceCenter>(_onResetForceCenter);
-      on<UpdateRouteProgress>(_onUpdateRouteProgress);
-
+      on<UserMovedMap>(_onUserMovedMap); 
+      on<StartRouting>(_onStartRouting);
 
       add(LoadLocation());
   }
@@ -108,7 +108,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       return;
     }
 
-    emit(state.copyWith(/*isLoading: true*/));
+    emit(state.copyWith());
 
     try {
       final route = await getRoute(
@@ -120,7 +120,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         currentRoute: route,
         destination: event.destination,
         isLoading: false,
-        //forceCenter: true,
         isRouteCompleted: false,
       ));
 
@@ -143,19 +142,14 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }
   
-  void _onClearRoute(ClearRoute event, Emitter<MapState> emit) {
+  void _onClearRoute(
+    ClearRoute event, 
+    Emitter<MapState> emit) {
     emit(state.copyWith(
       currentRoute: null,
       currentSegmentIndex: 0,
       projectedLocation: null,
     ));
-  }
-
-  void _onResetForceCenter(
-    ResetForceCenter event,
-    Emitter<MapState> emit,
-  ) {
-    emit(state.copyWith(forceCenter: false));
   }
 
   void _onLocationUpdated(
@@ -168,18 +162,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     emit(updatedState);
 
     _updateRouteProgressIfNeeded(event.location, updatedState, emit);
-  }
-
-  void _onUpdateRouteProgress(
-    UpdateRouteProgress event,
-    Emitter<MapState> emit,
-  ) {
-    final updatedState = state.copyWith(
-      currentLocation: event.currentLocation,
-    );
-    emit(updatedState);
-
-    _updateRouteProgressIfNeeded(event.currentLocation, updatedState, emit);
   }
 
   void _updateRouteProgressIfNeeded(
@@ -208,6 +190,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         currentSegmentIndex: 0,
         projectedLocation: null,
         isRouteCompleted: true,
+        forceCenter: false,
       ));
       return;
     }
@@ -236,5 +219,22 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       currentSegmentIndex: projection.segmentIndex,
       projectedLocation: projection.projectedPoint,
     ));
+  }
+
+  void _onUserMovedMap( 
+    UserMovedMap event,
+    Emitter<MapState> emit,) {
+    
+    if (state.forceCenter) {
+      emit(state.copyWith(forceCenter: false));
+    }
+  }
+
+  void _onStartRouting(
+    StartRouting event,
+    Emitter<MapState> emit,
+  ) {
+      emit(state.copyWith(forceCenter: true));
+      add(BuildRoute(event.destination));
   }
 }

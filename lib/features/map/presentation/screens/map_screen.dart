@@ -45,7 +45,7 @@ class _MapViewState extends State<MapView> {
               _mapController.move(LatLng(lat, lng), 14.0);
             });
 
-            context.read<MapBloc>().add(ResetForceCenter());
+            
              
           }
         },
@@ -63,8 +63,18 @@ class _MapViewState extends State<MapView> {
                   ? LatLng(location.latitude, location.longitude)
                   : const LatLng(55.751244, 37.618423),
               initialZoom: 14.0,
+              onPositionChanged: (position, hasGesture) {
+                if (hasGesture && _isMoving == false) {
+                  _isMoving = true;
+                  context.read<MapBloc>().add(UserMovedMap());
+                  
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    _isMoving = false;
+                  });
+                }
+              },
               onLongPress: (tapPosition, point) {  
-                context.read<MapBloc>().add(BuildRoute(
+                context.read<MapBloc>().add(StartRouting(
                   Location(
                     latitude: point.latitude,
                     longitude: point.longitude,
