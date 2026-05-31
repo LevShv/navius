@@ -180,5 +180,24 @@ class MapBloc extends Bloc<MapEvent, MapState> {
             projection.projectedPoint,
       ),
     );
+    final destination = state.currentRoute!.points.last;
+    final distanceToFinish =
+        calc.DistanceCalculator.between(
+      event.currentLocation,
+      Location(
+        latitude: destination.latitude,
+        longitude: destination.longitude,
+      ),
+    );
+
+    print(
+      'distanceToFinish = $distanceToFinish',
+    );
+
+    if (distanceToFinish < 20) {
+      print('Маршрут завершён');
+
+      add(ClearRoute());
+    }
   }
 }
