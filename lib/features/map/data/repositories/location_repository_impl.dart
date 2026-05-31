@@ -1,5 +1,3 @@
-import 'package:geolocator/geolocator.dart';
-
 import '../../domain/entities/location.dart';
 import '../../domain/repositories/location_repository.dart';
 import '../datasources/location_datasource.dart';

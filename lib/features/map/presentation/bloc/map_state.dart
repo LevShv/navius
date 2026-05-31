@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/location.dart';
+import '../../domain/entities/route.dart';
 
 class MapState extends Equatable {
     final Location? currentLocation;
@@ -7,6 +8,12 @@ class MapState extends Equatable {
     final String? error;
     final bool forceCenter;
     final bool isTracking;
+    final RouteInfo? currentRoute;
+    final int? currentSegmentIndex;
+    final Location? projectedLocation;
+    final bool isRouteCompleted;
+    final Location? destination;
+    final bool isRerouting;
 
     const MapState({
         this.currentLocation,
@@ -14,6 +21,13 @@ class MapState extends Equatable {
         this.error,
         this.forceCenter = false,
         this.isTracking = false,
+        this.currentRoute,
+        this.currentSegmentIndex = 0,
+        this.projectedLocation,
+        this.isRouteCompleted = false,
+        this.destination,
+        this.isRerouting = false,
+
     });
 
     MapState copyWith({
@@ -22,6 +36,13 @@ class MapState extends Equatable {
         String? error,
         bool? forceCenter,
         bool? isTracking,
+        RouteInfo? currentRoute,
+        int? currentSegmentIndex,
+        Location? projectedLocation,
+        bool? isRouteCompleted,
+        Location? destination,
+        bool? isRerouting,
+        
     }) {
         return MapState(
             currentLocation: currentLocation ?? this.currentLocation,
@@ -29,6 +50,13 @@ class MapState extends Equatable {
             error: error ?? this.error,
             forceCenter: forceCenter ?? false,
             isTracking: isTracking ?? this.isTracking,
+            currentRoute: currentRoute ?? this.currentRoute,
+            currentSegmentIndex: currentSegmentIndex ?? this.currentSegmentIndex,
+            projectedLocation: projectedLocation ?? this.projectedLocation,
+            isRouteCompleted: isRouteCompleted ?? this.isRouteCompleted,
+            destination: destination ?? this.destination,
+            isRerouting: isRerouting ?? this.isRerouting,
+
         );
     }
 
@@ -38,6 +66,12 @@ class MapState extends Equatable {
       isLoading, 
       error, 
       forceCenter,
-      isTracking
+      isTracking,
+      currentRoute,
+      currentSegmentIndex,
+      projectedLocation,
+      isRouteCompleted,
+      destination,
+      isRerouting,
     ];
 }

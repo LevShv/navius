@@ -6,6 +6,7 @@ import '../bloc/map_bloc.dart';
 import '../bloc/map_event.dart';
 import '../bloc/map_state.dart';
 import '../../../../core/di/injection.dart';
+import '../../domain/entities/location.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
@@ -35,14 +36,11 @@ class _MapViewState extends State<MapView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Navius')),
       body: BlocConsumer<MapBloc, MapState>(
-
         listener: (context, state) {
           if (state.currentLocation != null && state.forceCenter) {
             final lat = state.currentLocation!.latitude;
             final lng = state.currentLocation!.longitude;
             
-            print('🎯 LISTENER сработал → Двигаем карту на: $lat, $lng');
-
             Future.delayed(const Duration(milliseconds: 100), () {
               _mapController.move(LatLng(lat, lng), 14.0);
             });
@@ -65,12 +63,81 @@ class _MapViewState extends State<MapView> {
                   ? LatLng(location.latitude, location.longitude)
                   : const LatLng(55.751244, 37.618423),
               initialZoom: 14.0,
+              onLongPress: (tapPosition, point) {  
+                context.read<MapBloc>().add(BuildRoute(
+                  Location(
+                    latitude: point.latitude,
+                    longitude: point.longitude,
+                  ),
+                ));
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Маршрут строится...'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              },
             ),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.navius',
               ),
+              if (state.currentRoute != null &&
+                  !state.isRouteCompleted)
+                Builder(
+                  builder: (_) {
+
+                    final bluePoints = <LatLng>[
+                      LatLng(
+                        state.projectedLocation!.latitude,
+                        state.projectedLocation!.longitude,
+                      ),
+                    ];
+
+                    bluePoints.addAll(
+                      state.currentRoute!.points
+                          .skip(
+                            (state.currentSegmentIndex ?? 0) + 1,
+                          )
+                          .map(
+                            (p) => LatLng(
+                              p.latitude,
+                              p.longitude,
+                            ),
+                          ),
+                    );
+
+                    return PolylineLayer(
+                      polylines: [
+
+                        // весь маршрут серым
+                        Polyline(
+                          points: state.currentRoute!.points
+                              .map(
+                                (p) => LatLng(
+                                  p.latitude,
+                                  p.longitude,
+                                ),
+                              )
+                              .toList(),
+                          color: Colors.grey.withOpacity(0.3),
+                          strokeWidth: 6,
+                        ),
+
+                        // остаток маршрута синим
+                        if (bluePoints.length > 1)
+                          Polyline(
+                            points: bluePoints,
+                            color: Colors.blue,
+                            strokeWidth: 6,
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              
               if (location != null)
                 MarkerLayer(
                   markers: [
