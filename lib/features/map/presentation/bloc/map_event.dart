@@ -25,3 +25,8 @@ class BuildRoute extends MapEvent {
 }
 
 class ClearRoute extends MapEvent {}
+
+class UpdateRouteProgress extends MapEvent {
+  final Location currentLocation;
+  const UpdateRouteProgress(this.currentLocation);
+}

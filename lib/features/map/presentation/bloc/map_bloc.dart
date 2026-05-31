@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:navius/features/map/domain/usecases/get_location_stream.dart';
 import 'package:navius/features/map/domain/entities/location.dart';
 import 'dart:async';
@@ -6,6 +7,7 @@ import 'map_event.dart';
 import 'map_state.dart';
 import '../../domain/usecases/get_current_location.dart';
 import '../../domain/usecases/get_route.dart';
+import '../../domain/utils/route_projection.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final GetCurrentLocation getCurrentLocation;
@@ -24,6 +26,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       on<BuildRoute>(_onBuildRoute);
       on<ClearRoute>(_onClearRoute);
       on<ResetForceCenter>(_onResetForceCenter);
+      on<UpdateRouteProgress>(_onUpdateRouteProgress);
+
 
       add(LoadLocation());
   }
@@ -101,6 +105,10 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     emit(state.copyWith(
       currentLocation: event.location,
     ));
+
+    if (state.currentRoute != null){
+      add(UpdateRouteProgress(event.location));      
+    }
   }
 
   Future<void> _onBuildRoute(
@@ -138,7 +146,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     ClearRoute event,
     Emitter<MapState> emit,
   ) {
-    emit(state.copyWith(currentRoute: null));
+    emit(state.copyWith(
+      currentRoute: null));
   }
 
   void _onResetForceCenter(
@@ -146,5 +155,30 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     Emitter<MapState> emit,
   ) {
     emit(state.copyWith(forceCenter: false));
+  }
+
+  void _onUpdateRouteProgress(
+    UpdateRouteProgress event,
+    Emitter<MapState> emit,
+  ) {
+    if (state.currentRoute == null) {
+      return;
+    }
+
+    final projection =
+        RouteProjection.projectOnRoute(
+      event.currentLocation,
+      state.currentRoute!.points,
+    );
+
+    emit(
+      state.copyWith(
+        currentSegmentIndex:
+            projection.segmentIndex,
+
+        projectedLocation:
+            projection.projectedPoint,
+      ),
+    );
   }
 }

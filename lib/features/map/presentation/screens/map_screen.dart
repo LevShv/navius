@@ -41,8 +41,6 @@ class _MapViewState extends State<MapView> {
             final lat = state.currentLocation!.latitude;
             final lng = state.currentLocation!.longitude;
             
-            print('🎯 LISTENER сработал → Двигаем карту на: $lat, $lng');
-
             Future.delayed(const Duration(milliseconds: 100), () {
               _mapController.move(LatLng(lat, lng), 14.0);
             });
@@ -86,18 +84,86 @@ class _MapViewState extends State<MapView> {
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.navius',
               ),
-              if (state.currentRoute != null)
-              PolylineLayer(
-                polylines: [
-                  Polyline(
-                    points: state.currentRoute!.points.map((point) => 
-                      LatLng(point.latitude, point.longitude)
-                    ).toList(),
-                    color: Colors.blue,
-                    strokeWidth: 4.0,
-                  ),
-                ],
+              if (state.currentRoute != null &&
+                state.projectedLocation != null)
+              Builder(
+                builder: (_) {
+
+                  final greenPoints = <LatLng>[];
+
+                  greenPoints.addAll(state.currentRoute!.points
+                    .take(
+                      (state.currentSegmentIndex ?? 0) + 1,
+                    )
+                    .map(
+                      (p) => LatLng(
+                        p.latitude,
+                        p.longitude,
+                      ),
+                    ),
+                  );
+
+                  greenPoints.add(
+                    LatLng(
+                      state.projectedLocation!.latitude,
+                      state.projectedLocation!.longitude,
+                    ),
+                  );
+
+                  final bluePoints = <LatLng>[
+                    LatLng(
+                      state.projectedLocation!.latitude,
+                      state.projectedLocation!.longitude,
+                    ),
+                  ];
+
+                  bluePoints.addAll(
+                    state.currentRoute!.points
+                        .skip(
+                          (state.currentSegmentIndex ?? 0) + 1,
+                        )
+                        .map(
+                          (p) => LatLng(
+                            p.latitude,
+                            p.longitude,
+                          ),
+                        ),
+                  );
+
+                  return PolylineLayer(
+                    polylines: [
+
+                      Polyline(
+                        points: state.currentRoute!.points
+                            .map(
+                              (p) => LatLng(
+                                p.latitude,
+                                p.longitude,
+                              ),
+                            )
+                            .toList(),
+                        color: Colors.grey.withOpacity(0.3),
+                        strokeWidth: 6,
+                      ),
+
+                      if (greenPoints.length > 1)
+                        Polyline(
+                          points: greenPoints,
+                          color: Colors.green,
+                          strokeWidth: 6,
+                        ),
+
+                      if (bluePoints.length > 1)
+                        Polyline(
+                          points: bluePoints,
+                          color: Colors.blue,
+                          strokeWidth: 6,
+                        ),
+                    ],
+                  );
+                },
               ),
+              
               if (location != null)
                 MarkerLayer(
                   markers: [
