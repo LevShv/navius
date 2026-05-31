@@ -46,8 +46,8 @@ class LocationDataSourceImpl implements LocationDataSource {
     return Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: 5, 
-        //timeLimit: Duration(seconds: 2), 
+       // distanceFilter: 1, 
+       // timeLimit: Duration(milliseconds: 500), 
       ),
     ); 
   }

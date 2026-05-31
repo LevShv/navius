@@ -108,7 +108,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       return;
     }
 
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(/*isLoading: true*/));
 
     try {
       final route = await getRoute(
@@ -118,8 +118,9 @@ class MapBloc extends Bloc<MapEvent, MapState> {
 
       emit(state.copyWith(
         currentRoute: route,
+        destination: event.destination,
         isLoading: false,
-        forceCenter: true,
+        //forceCenter: true,
         isRouteCompleted: false,
       ));
 
@@ -215,6 +216,21 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       location,
       currentRoute.points,
     );
+
+    final distanceToRoute = calc.DistanceCalculator.betweenLocations(
+      location,
+      projection.projectedPoint,
+    );
+
+    if (distanceToRoute > 30) {       
+
+      emit(currentState.copyWith(isRerouting: true));
+
+      if (currentState.destination != null) {
+        add(BuildRoute(currentState.destination!));
+      }
+      return;
+    }
 
     emit(currentState.copyWith(
       currentSegmentIndex: projection.segmentIndex,
