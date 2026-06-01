@@ -50,7 +50,7 @@ class _MapViewState extends State<MapView> {
                 final lng = state.currentLocation!.longitude;
                 
                 Future.delayed(const Duration(milliseconds: 100), () {
-                  _mapController.move(LatLng(lat, lng), 14.0);
+                  _mapController.move(LatLng(lat, lng), _mapController.camera.zoom);
                 });
               }
 
@@ -239,21 +239,50 @@ class _MapViewState extends State<MapView> {
                                state.currentRoute != null && 
                                !state.isRouteCompleted;
         
-        final bottomMargin = hasActiveRoute ? 180.0 : 16.0;
+        final bottomMargin = hasActiveRoute ? 110.0 : 16.0;
         
         return Padding(
           padding: EdgeInsets.only(bottom: bottomMargin),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FloatingActionButton(
-                heroTag: 'center',
-                onPressed: () {
-                  context.read<MapBloc>().add(CenterOnUser());
-                },
-                child: const Icon(Icons.my_location),
-              ),
-            ],
+             children: [
+
+            FloatingActionButton(
+              heroTag: 'zoom_in',
+              mini: true,
+              onPressed: () {
+                final camera = _mapController.camera;
+                  _mapController.move(
+                    camera.center,
+                    camera.zoom + 1,
+                  );
+              },
+              child: const Icon(Icons.add),
+            ),
+            const SizedBox(height: 8),
+            
+            FloatingActionButton(
+              heroTag: 'zoom_out',
+              mini: true,
+              onPressed: () {
+                final camera = _mapController.camera;
+                  _mapController.move(
+                    camera.center,
+                    camera.zoom - 1,
+                  );
+              },
+              child: const Icon(Icons.remove),
+            ),
+            const SizedBox(height: 8),
+            
+            FloatingActionButton(
+              heroTag: 'center',
+              onPressed: () {
+                context.read<MapBloc>().add(CenterOnUser());
+              },
+              child: const Icon(Icons.my_location),
+            ),
+          ],
           ),
         );
       },
