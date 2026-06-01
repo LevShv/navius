@@ -1,4 +1,4 @@
-import '../../domain/entities/location.dart';
+/*import '../../domain/entities/location.dart';
 import '../../domain/entities/route.dart';
 import '../../domain/repositories/route_repository.dart';
 import '../datasources/route_datasource.dart';
@@ -27,6 +27,67 @@ class RouteRepositoryImpl implements RouteRepository{
       
       final route = rawData['routes'][0];
       final geometry = route['geometry']['coordinates'];
+      
+      final points = _parseCoordinates(geometry);
+      
+      return RouteInfo(
+        points: points,
+        distance: route['distance']?.toDouble() ?? 0.0,
+        duration: route['duration']?.toInt() ?? 0,
+        summary: route['summary'] ?? 'Маршрут построен',
+       );
+    
+    } catch (e) {
+      throw Exception('Ошибка построения маршрута: $e');
+    }
+  }
+
+  @override
+  Future<List<NavigationStep>> getNavigationSteps(RouteInfo route) async {
+    //TODO получение маршркта по шагам 
+    throw UnimplementedError('Нужно сохранять шаги при первом запросе');
+  }
+
+  List<RoutePoint> _parseCoordinates(List<dynamic> coordinates) {
+    return coordinates.map<RoutePoint>((coord) {
+      return RoutePoint(
+        longitude: coord[0].toDouble(),
+        latitude: coord[1].toDouble(),
+      );
+    }).toList();
+  }
+}
+*/
+
+import '../../domain/entities/location.dart';
+import '../../domain/entities/route.dart';
+import '../../domain/repositories/route_repository.dart';
+import '../datasources/route_datasource.dart';
+
+class RouteRepositoryImpl implements RouteRepository{
+  final RouteDataSource dataSource;
+
+  RouteRepositoryImpl(this.dataSource);
+
+  @override 
+  Future<RouteInfo> getRoute({
+    required Location start,
+    required Location end,
+  }) async {
+    try {
+      final rawData = await dataSource.fetchRoute(
+        startLat: start.latitude,
+        startLng: start.longitude,
+        endLat: end.latitude,
+        endLng: end.longitude,
+      );
+
+      if (rawData['paths'] == null || rawData['paths'].isEmpty) {
+        throw Exception('Маршрут не найден');
+      }
+      
+      final route = rawData['paths'][0];
+      final geometry = route['points']['coordinates'];
       
       final points = _parseCoordinates(geometry);
       
