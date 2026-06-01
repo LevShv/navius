@@ -124,9 +124,10 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       emit(state.copyWith(
         currentRoute: route,
         destination: event.destination,
-        isLoading: false,
+        isRouteLoading: false,
         isRouteCompleted: false,
         routeStartTime: DateTime.now(),
+        showRouitingUi: true,
       ));
 
       if (state.currentLocation != null) {
@@ -141,11 +142,13 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         ));
 
         _updateProgress(emit);
+      
       }
     } catch (e) {
       emit(state.copyWith(
-        isLoading: false,
+        isRouteLoading: false,
         error: e.toString(),
+        showRouitingUi: false,
       ));
     }
   }
@@ -153,10 +156,16 @@ class MapBloc extends Bloc<MapEvent, MapState> {
   void _onClearRoute(
     ClearRoute event, 
     Emitter<MapState> emit) {
+      print("Clean");
     emit(state.copyWith(
       currentRoute: null,
       currentSegmentIndex: 0,
       projectedLocation: null,
+      routeProgress: null,       
+      destination: null, 
+      isRerouting: false, 
+      showRouitingUi: false,
+      routeStartTime: null,
     ));
   }
 
@@ -253,8 +262,14 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     Emitter<MapState> emit,
   ) {
       emit(state.copyWith(
-        forceCenter: true,
-        savedProgressPercent: 0));
+        savedProgressPercent: 0,
+        currentRoute: null,
+        currentSegmentIndex: 0,
+        projectedLocation: null,
+        routeProgress: null,       
+        destination: null, 
+        isRouteLoading: false,
+        ));
       add(BuildRoute(event.destination));
   }
 

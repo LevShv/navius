@@ -6,6 +6,7 @@ import '../../domain/entities/route_progress.dart';
 class MapState extends Equatable {
     final Location? currentLocation;
     final bool isLoading;
+    final bool isRouteLoading;
     final String? error;
     final bool forceCenter;
     final bool isTracking;
@@ -18,10 +19,12 @@ class MapState extends Equatable {
     final RouteProgress? routeProgress;
     final DateTime? routeStartTime; 
     final double savedProgressPercent;
+    final bool showRouitingUi;
 
     const MapState({
         this.currentLocation,
         this.isLoading = false,
+        this.isRouteLoading = false,
         this.error,
         this.forceCenter = true,
         this.isTracking = false,
@@ -34,11 +37,13 @@ class MapState extends Equatable {
         this.routeProgress,
         this.routeStartTime,
         this.savedProgressPercent = 0.0,
+        this.showRouitingUi = false,
     });
 
     MapState copyWith({
         Location? currentLocation,
         bool? isLoading,
+        bool? isRouteLoading,
         String? error,
         bool? forceCenter,
         bool? isTracking,
@@ -51,11 +56,13 @@ class MapState extends Equatable {
         RouteProgress? routeProgress,
         DateTime? routeStartTime, 
         double? savedProgressPercent,
+        bool? showRouitingUi,
         
     }) {
         return MapState(
             currentLocation: currentLocation ?? this.currentLocation,
             isLoading: isLoading ?? this.isLoading,
+            isRouteLoading: isRouteLoading ?? this.isRouteLoading,
             error: error ?? this.error,
             forceCenter: forceCenter ?? this.forceCenter,
             isTracking: isTracking ?? this.isTracking,
@@ -68,6 +75,7 @@ class MapState extends Equatable {
             routeProgress: routeProgress ?? this.routeProgress,
             routeStartTime: routeStartTime ?? this.routeStartTime,
             savedProgressPercent: savedProgressPercent ?? this.savedProgressPercent,
+            showRouitingUi: showRouitingUi ?? this.showRouitingUi,
         );
     }
 
@@ -87,5 +95,7 @@ class MapState extends Equatable {
       routeProgress,
       routeStartTime,
       savedProgressPercent, 
+      showRouitingUi,
+      isRouteLoading
     ];
 }

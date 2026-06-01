@@ -8,6 +8,8 @@ import '../bloc/map_state.dart';
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/location.dart';
 import '../../presentation/widgets/route_progress_card.dart';
+import '../widgets/notification_manager.dart';
+import '../../domain/entities/route.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
@@ -16,7 +18,9 @@ class MapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => sl<MapBloc>()..add(LoadLocation()),
-      child: const MapView(),
+      child: NotificationOverlay( 
+        child: const MapView(),
+      ),
     );
   }
 }
@@ -31,6 +35,8 @@ class MapView extends StatefulWidget {
 class _MapViewState extends State<MapView> {
   final MapController _mapController = MapController();
   bool _isMoving = false;
+  bool _wasRouteBuilding = false;
+  RouteInfo? _lastNotifiedRoute;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +53,30 @@ class _MapViewState extends State<MapView> {
                   _mapController.move(LatLng(lat, lng), 14.0);
                 });
               }
+              print(state.currentRoute);
+              if (state.currentRoute != null && _wasRouteBuilding) {
+                NotificationManager.show(
+                  'Маршрут построен',
+                  color: Colors.green,
+                  duration: const Duration(seconds: 2),
+                );
+                _wasRouteBuilding = false;
+                _lastNotifiedRoute = state.currentRoute;
+              }
+              
+              if (state.error != null && _wasRouteBuilding) {
+                print('=== ОШИБКА ПОСТРОЕНИЯ: ${state.error} ==='); 
+                _wasRouteBuilding = false;
+                NotificationManager.show(
+                  'Ошибка построения маршрута',
+                  color: Colors.red,
+                  duration: const Duration(seconds: 2),
+                );
+              }
+              
+              if (state.isLoading && state.currentRoute == null) {
+                _wasRouteBuilding = true;
+              }            
             },
             builder: (context, state) {
               return _buildMap(state);
@@ -54,12 +84,9 @@ class _MapViewState extends State<MapView> {
           ),
           
           BlocBuilder<MapBloc, MapState>(
-            buildWhen: (previous, current) {
-              return previous.routeProgress != current.routeProgress &&
-                     current.routeProgress != null;
-            },
             builder: (context, state) {
-              if (state.routeProgress != null && 
+              if (state.showRouitingUi == true && 
+                  state.routeProgress != null && 
                   state.currentRoute != null && 
                   !state.isRouteCompleted) {
                 return Positioned(
@@ -104,19 +131,13 @@ class _MapViewState extends State<MapView> {
           }
         },
         onLongPress: (tapPosition, point) {
+          _wasRouteBuilding = true;
           context.read<MapBloc>().add(StartRouting(
             Location(
               latitude: point.latitude,
               longitude: point.longitude,
             ),
           ));
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Маршрут строится...'),
-              duration: Duration(seconds: 1),
-            ),
-          );
         },
       ),
       children: [
@@ -124,7 +145,7 @@ class _MapViewState extends State<MapView> {
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'com.example.navius',
         ),
-        if (state.currentRoute != null && !state.isRouteCompleted)
+        if (state.currentRoute != null && !state.isRouteCompleted && !state.isRouteLoading && state.showRouitingUi)
           _buildRouteLayer(state),
         if (location != null)
           MarkerLayer(
@@ -178,16 +199,13 @@ class _MapViewState extends State<MapView> {
     );
   }
   
-  // Исправленный метод для FAB с отслеживанием состояния маршрута
   Widget _buildFloatingActionButton() {
     return BlocBuilder<MapBloc, MapState>(
       builder: (context, state) {
-        // Проверяем, есть ли активный маршрут
         final hasActiveRoute = state.routeProgress != null && 
                                state.currentRoute != null && 
                                !state.isRouteCompleted;
         
-        // Если маршрут активен - поднимаем кнопку над карточкой
         final bottomMargin = hasActiveRoute ? 180.0 : 16.0;
         
         return Padding(
