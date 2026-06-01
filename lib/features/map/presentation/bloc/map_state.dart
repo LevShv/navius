@@ -17,12 +17,13 @@ class MapState extends Equatable {
     final bool isRerouting;
     final RouteProgress? routeProgress;
     final DateTime? routeStartTime; 
+    final double savedProgressPercent;
 
     const MapState({
         this.currentLocation,
         this.isLoading = false,
         this.error,
-        this.forceCenter = false,
+        this.forceCenter = true,
         this.isTracking = false,
         this.currentRoute,
         this.currentSegmentIndex = 0,
@@ -32,6 +33,7 @@ class MapState extends Equatable {
         this.isRerouting = false,
         this.routeProgress,
         this.routeStartTime,
+        this.savedProgressPercent = 0.0,
     });
 
     MapState copyWith({
@@ -48,6 +50,8 @@ class MapState extends Equatable {
         bool? isRerouting,
         RouteProgress? routeProgress,
         DateTime? routeStartTime, 
+        double? savedProgressPercent,
+        
     }) {
         return MapState(
             currentLocation: currentLocation ?? this.currentLocation,
@@ -63,6 +67,7 @@ class MapState extends Equatable {
             isRerouting: isRerouting ?? this.isRerouting,
             routeProgress: routeProgress ?? this.routeProgress,
             routeStartTime: routeStartTime ?? this.routeStartTime,
+            savedProgressPercent: savedProgressPercent ?? this.savedProgressPercent,
         );
     }
 
@@ -81,5 +86,6 @@ class MapState extends Equatable {
       isRerouting,
       routeProgress,
       routeStartTime,
+      savedProgressPercent, 
     ];
 }

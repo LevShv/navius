@@ -11,7 +11,7 @@ import '../../domain/usecases/get_route.dart';
 import '../../domain/usecases/calculate_route_progress.dart';
 import '../../domain/utils/route_projection.dart';
 import '../../domain/utils/distance_calculator.dart' as calc;
-//import '../../domain/entities/route_progress.dart';
+import '../../domain/entities/route_progress.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final GetCurrentLocation getCurrentLocation;
@@ -219,9 +219,13 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       projection.projectedPoint,
     );
 
-    if (distanceToRoute > 30) {       
+    if (distanceToRoute > 30) {   
+      final currentProgress = currentState.routeProgress?.progressPercent ?? 0.0;    
 
-      emit(currentState.copyWith(isRerouting: true));
+      emit(currentState.copyWith(
+        isRerouting: true,
+        savedProgressPercent: currentProgress,
+      ));
 
       if (currentState.destination != null) {
         add(BuildRoute(currentState.destination!));
@@ -248,28 +252,34 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     StartRouting event,
     Emitter<MapState> emit,
   ) {
-      emit(state.copyWith(forceCenter: true));
+      emit(state.copyWith(
+        forceCenter: true,
+        savedProgressPercent: 0));
       add(BuildRoute(event.destination));
   }
 
-  void _updateProgress(Emitter<MapState> emit) {
-    if (state.currentRoute == null || 
-        state.currentLocation == null ||
-        state.projectedLocation == null ||
-        state.currentSegmentIndex == null ||
-        state.routeStartTime == null) {
-      return;
-    }
+  void _updateProgress(
+    Emitter<MapState> emit
+  ) {
+    final newProgress = calculateRouteProgress.execute(
+    route: state.currentRoute!,
+    currentLocation: state.currentLocation!,
+    currentSegmentIndex: state.currentSegmentIndex!,
+    projectedLocation: state.projectedLocation!,
+    routeStartTime: state.routeStartTime!,
+  );
+  
+  final totalProgressPercent = state.savedProgressPercent + 
+      (newProgress.progressPercent * (1 - state.savedProgressPercent));
+  
+  final finalProgress = RouteProgress(
+    remainingDistance: newProgress.remainingDistance * (1 - state.savedProgressPercent),
+    remainingDuration: newProgress.remainingDuration,
+    eta: newProgress.eta,
+    progressPercent: totalProgressPercent.clamp(0.0, 1.0),
+  );
 
-    final progress = calculateRouteProgress.execute(
-      route: state.currentRoute!,
-      currentLocation: state.currentLocation!,
-      currentSegmentIndex: state.currentSegmentIndex!,
-      projectedLocation: state.projectedLocation!,
-      routeStartTime: state.routeStartTime!,
-    );
-
-    emit(state.copyWith(routeProgress: progress));
+  emit(state.copyWith(routeProgress: finalProgress));
   }
 
   void _onUpdateRouteProgress(
