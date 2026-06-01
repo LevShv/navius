@@ -36,7 +36,7 @@ class _MapViewState extends State<MapView> {
   final MapController _mapController = MapController();
   bool _isMoving = false;
   bool _wasRouteBuilding = false;
-  RouteInfo? _lastNotifiedRoute;
+  bool _completeMessageShown = false;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +53,16 @@ class _MapViewState extends State<MapView> {
                   _mapController.move(LatLng(lat, lng), 14.0);
                 });
               }
-              print(state.currentRoute);
+
+              if (state.isRouteCompleted && !_completeMessageShown) {
+                NotificationManager.show(
+                  'Вы прибыли в точку назначения!',
+                  color: Colors.green,
+                  duration: const Duration(seconds: 3),
+                );
+                _completeMessageShown = true;
+              }
+
               if (state.currentRoute != null && _wasRouteBuilding) {
                 NotificationManager.show(
                   'Маршрут построен',
@@ -61,7 +70,7 @@ class _MapViewState extends State<MapView> {
                   duration: const Duration(seconds: 2),
                 );
                 _wasRouteBuilding = false;
-                _lastNotifiedRoute = state.currentRoute;
+                _completeMessageShown = false;
               }
               
               if (state.error != null && _wasRouteBuilding) {
@@ -73,10 +82,7 @@ class _MapViewState extends State<MapView> {
                   duration: const Duration(seconds: 2),
                 );
               }
-              
-              if (state.isLoading && state.currentRoute == null) {
-                _wasRouteBuilding = true;
-              }            
+          
             },
             builder: (context, state) {
               return _buildMap(state);

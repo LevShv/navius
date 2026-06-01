@@ -214,6 +214,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         forceCenter: false,
         routeProgress: null,
         routeStartTime: null,
+        showRouitingUi: false, 
       ));
       return;
     }
