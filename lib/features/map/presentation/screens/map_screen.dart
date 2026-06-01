@@ -112,6 +112,46 @@ class _MapViewState extends State<MapView> {
     }
 
     final location = state.currentLocation;
+    final markers = <Marker>[];
+    
+    if (location != null) {
+      markers.add(
+        Marker(
+          width: 60,
+          height: 60,
+          point: LatLng(location.latitude, location.longitude),
+          child: const Icon(
+            Icons.my_location,
+            color: Colors.blue,
+            size: 40,
+          ),
+        ),
+      );
+    }
+    
+    if (state.currentRoute != null && 
+        !state.isRouteCompleted && 
+        state.showRouitingUi &&
+        state.currentRoute!.points.isNotEmpty) {
+      
+      final endPoint = state.currentRoute!.points.last;
+      markers.add(
+        Marker(
+          
+          width: 40,
+          height: 40,
+          point: LatLng(endPoint.latitude, endPoint.longitude),
+          child: Transform.translate(
+            offset: const Offset(0, -12), 
+            child: const Icon(
+              Icons.place,
+              color: Colors.red,
+              size: 35,
+            ),
+          ),
+        ),
+      );
+    }
 
     return FlutterMap(
       mapController: _mapController,
@@ -147,25 +187,12 @@ class _MapViewState extends State<MapView> {
         ),
         if (state.currentRoute != null && !state.isRouteCompleted && !state.isRouteLoading && state.showRouitingUi)
           _buildRouteLayer(state),
-        if (location != null)
-          MarkerLayer(
-            markers: [
-              Marker(
-                width: 60,
-                height: 60,
-                point: LatLng(location.latitude, location.longitude),
-                child: const Icon(
-                  Icons.my_location,
-                  color: Colors.blue,
-                  size: 40,
-                ),
-              ),
-            ],
-          ),
+        MarkerLayer(
+          markers: markers,
+        ),
       ],
     );
   }
-  
   Widget _buildRouteLayer(MapState state) {
     final bluePoints = <LatLng>[
       LatLng(
