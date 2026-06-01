@@ -11,6 +11,7 @@ import '../../features/map/data/datasources/route_datasource.dart';
 import '../../features/map/data/repositories/route_repository_impl.dart';
 import '../../features/map/domain/repositories/route_repository.dart';
 import '../../features/map/domain/usecases/get_route.dart';
+import '../../features/map/domain/usecases/calculate_route_progress.dart';
 import 'package:http/http.dart' as http;
 
 final sl = GetIt.instance;
@@ -25,6 +26,7 @@ Future<void> init() async {
       getCurrentLocation: sl(),
       getLocationStream: sl(),
       getRoute: sl(),
+      calculateRouteProgress: sl(),
     )
   );
 
@@ -32,6 +34,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetCurrentLocation(sl()));
   sl.registerLazySingleton(() => GetLocationStream(sl()));
   sl.registerLazySingleton(() => GetRoute(sl()));
+  sl.registerLazySingleton(() => CalculateRouteProgress());
 
   // Map Repository
   sl.registerLazySingleton<LocationRepository>(() => LocationRepositoryImpl(sl()));

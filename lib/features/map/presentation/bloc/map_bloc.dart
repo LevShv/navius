@@ -8,19 +8,23 @@ import 'map_event.dart';
 import 'map_state.dart';
 import '../../domain/usecases/get_current_location.dart';
 import '../../domain/usecases/get_route.dart';
+import '../../domain/usecases/calculate_route_progress.dart';
 import '../../domain/utils/route_projection.dart';
 import '../../domain/utils/distance_calculator.dart' as calc;
+//import '../../domain/entities/route_progress.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final GetCurrentLocation getCurrentLocation;
   final GetLocationStream getLocationStream;
   StreamSubscription<Location>? _locationSubscription;
   final GetRoute getRoute;
+  final CalculateRouteProgress calculateRouteProgress;
 
   MapBloc({
     required this.getCurrentLocation,
     required this.getLocationStream,
     required this.getRoute,
+    required this.calculateRouteProgress,
   }) : super(const MapState()) {
       on<LoadLocation>(_onLoadLocation);
       on<CenterOnUser>(_onCenterOnUser);
@@ -29,6 +33,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       on<ClearRoute>(_onClearRoute);
       on<UserMovedMap>(_onUserMovedMap); 
       on<StartRouting>(_onStartRouting);
+       on<UpdateRouteProgress>(_onUpdateRouteProgress); 
 
       add(LoadLocation());
   }
@@ -121,6 +126,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         destination: event.destination,
         isLoading: false,
         isRouteCompleted: false,
+        routeStartTime: DateTime.now(),
       ));
 
       if (state.currentLocation != null) {
@@ -133,6 +139,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           currentSegmentIndex: projection.segmentIndex,
           projectedLocation: projection.projectedPoint,
         ));
+
+        _updateProgress(emit);
       }
     } catch (e) {
       emit(state.copyWith(
@@ -162,6 +170,10 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     emit(updatedState);
 
     _updateRouteProgressIfNeeded(event.location, updatedState, emit);
+
+    if (updatedState.currentRoute != null && !updatedState.isRouteCompleted) {
+      _updateProgress(emit);
+    }
   }
 
   void _updateRouteProgressIfNeeded(
@@ -191,6 +203,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         projectedLocation: null,
         isRouteCompleted: true,
         forceCenter: false,
+        routeProgress: null,
+        routeStartTime: null,
       ));
       return;
     }
@@ -236,5 +250,32 @@ class MapBloc extends Bloc<MapEvent, MapState> {
   ) {
       emit(state.copyWith(forceCenter: true));
       add(BuildRoute(event.destination));
+  }
+
+  void _updateProgress(Emitter<MapState> emit) {
+    if (state.currentRoute == null || 
+        state.currentLocation == null ||
+        state.projectedLocation == null ||
+        state.currentSegmentIndex == null ||
+        state.routeStartTime == null) {
+      return;
+    }
+
+    final progress = calculateRouteProgress.execute(
+      route: state.currentRoute!,
+      currentLocation: state.currentLocation!,
+      currentSegmentIndex: state.currentSegmentIndex!,
+      projectedLocation: state.projectedLocation!,
+      routeStartTime: state.routeStartTime!,
+    );
+
+    emit(state.copyWith(routeProgress: progress));
+  }
+
+  void _onUpdateRouteProgress(
+    UpdateRouteProgress event,
+    Emitter<MapState> emit,
+  ) {
+    _updateProgress(emit);
   }
 }

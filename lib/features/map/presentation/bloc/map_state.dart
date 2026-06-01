@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/location.dart';
 import '../../domain/entities/route.dart';
+import '../../domain/entities/route_progress.dart';
 
 class MapState extends Equatable {
     final Location? currentLocation;
@@ -14,6 +15,8 @@ class MapState extends Equatable {
     final bool isRouteCompleted;
     final Location? destination;
     final bool isRerouting;
+    final RouteProgress? routeProgress;
+    final DateTime? routeStartTime; 
 
     const MapState({
         this.currentLocation,
@@ -27,7 +30,8 @@ class MapState extends Equatable {
         this.isRouteCompleted = false,
         this.destination,
         this.isRerouting = false,
-
+        this.routeProgress,
+        this.routeStartTime,
     });
 
     MapState copyWith({
@@ -42,7 +46,8 @@ class MapState extends Equatable {
         bool? isRouteCompleted,
         Location? destination,
         bool? isRerouting,
-        
+        RouteProgress? routeProgress,
+        DateTime? routeStartTime, 
     }) {
         return MapState(
             currentLocation: currentLocation ?? this.currentLocation,
@@ -56,7 +61,8 @@ class MapState extends Equatable {
             isRouteCompleted: isRouteCompleted ?? this.isRouteCompleted,
             destination: destination ?? this.destination,
             isRerouting: isRerouting ?? this.isRerouting,
-
+            routeProgress: routeProgress ?? this.routeProgress,
+            routeStartTime: routeStartTime ?? this.routeStartTime,
         );
     }
 
@@ -73,5 +79,7 @@ class MapState extends Equatable {
       isRouteCompleted,
       destination,
       isRerouting,
+      routeProgress,
+      routeStartTime,
     ];
 }
