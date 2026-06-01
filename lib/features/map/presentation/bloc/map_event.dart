@@ -30,3 +30,9 @@ class UpdateRouteProgress extends MapEvent {
   final Location currentLocation;
   const UpdateRouteProgress(this.currentLocation);
 }
+
+class UserMovedMap extends MapEvent {}
+class StartRouting extends MapEvent {
+  final Location destination;
+  const StartRouting(this.destination);
+}
