@@ -6,6 +6,4 @@ abstract class RouteRepository {
     required Location start,
     required Location end,
   });
-
-  Future<List<NavigationStep>> getNavigationSteps(RouteInfo route);
 }

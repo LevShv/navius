@@ -59,20 +59,3 @@ class RouteInfo extends Equatable {
   List<Object?> get props => [points, distance, duration, summary];
 }
 
-class NavigationStep extends Equatable {
-  final String instruction; 
-  final double distance; 
-  final int duration; 
-  final RoutePoint point;
-  
-  const NavigationStep({
-    required this.instruction,
-    required this.distance,
-    required this.duration,
-    required this.point,
-  });
-  
-  
-  @override
-  List<Object?> get props => [instruction, distance, duration, point];
-}

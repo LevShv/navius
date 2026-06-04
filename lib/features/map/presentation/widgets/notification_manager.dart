@@ -136,7 +136,7 @@ class _NotificationOverlayState extends State<NotificationOverlay> {
         widget.child,
         if (_currentNotification != null)
           Positioned(
-            top: 50,
+            top: 110,
             left: 16,
             right: 16,
             child: CustomSnackbar(

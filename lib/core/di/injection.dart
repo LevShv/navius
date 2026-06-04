@@ -14,6 +14,12 @@ import '../../features/map/domain/usecases/get_route.dart';
 import '../../features/map/domain/usecases/calculate_route_progress.dart';
 import 'package:http/http.dart' as http;
 
+import '../../features/search/presentation/bloc/search_bloc.dart';
+import '../../features/search/domain/usecases/search_places.dart';
+import '../../features/search/domain/repositories/search_repository.dart';
+import '../../features/search/data/repositories/search_repository_impl.dart';
+import '../../features/search/data/datasources/search_datasource.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -43,5 +49,11 @@ Future<void> init() async {
   // Map Datasources
   sl.registerLazySingleton<LocationDataSource>(() => LocationDataSourceImpl());
   sl.registerLazySingleton(() => RouteDataSource(client: sl()));
+
+  // Search
+ sl.registerFactory(() => SearchBloc(searchPlaces: sl()));
+  sl.registerLazySingleton(() => SearchPlaces(sl()));
+  sl.registerLazySingleton<SearchRepository>(() => SearchRepositoryImpl(dataSource: sl()));
+  sl.registerLazySingleton<SearchDataSource>(() => SearchDataSourceImpl(client: sl()));
 }
 

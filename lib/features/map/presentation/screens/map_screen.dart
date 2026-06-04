@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+
 import '../bloc/map_bloc.dart';
 import '../bloc/map_event.dart';
 import '../bloc/map_state.dart';
+
 import '../../../../core/di/injection.dart';
+
 import '../../domain/entities/location.dart';
 import '../../presentation/widgets/route_progress_card.dart';
 import '../widgets/notification_manager.dart';
-import '../../domain/entities/route.dart';
+
+import '../../../search/presentation/widgets/search_bar.dart' as sBar; 
+import '../../../search/domain/entities/search_result.dart'; 
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
@@ -89,6 +94,18 @@ class _MapViewState extends State<MapView> {
             },
           ),
           
+          sBar.SearchBar(
+            onPlaceSelected: (SearchResult result) {
+              _wasRouteBuilding = true;
+              context.read<MapBloc>().add(StartRouting(
+                Location(
+                  latitude: result.latitude,
+                  longitude: result.longitude,
+                ),
+              ));
+            },
+          ),
+
           BlocBuilder<MapBloc, MapState>(
             builder: (context, state) {
               if (state.showRouitingUi == true && 
@@ -199,6 +216,7 @@ class _MapViewState extends State<MapView> {
       ],
     );
   }
+ 
   Widget _buildRouteLayer(MapState state) {
     final bluePoints = <LatLng>[
       LatLng(
