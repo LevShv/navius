@@ -51,6 +51,7 @@ class _SearchBarContentState extends State<_SearchBarContent> {
       right: 16,
       child: Column(
         children: [
+          // Поле поиска
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -106,9 +107,15 @@ class _SearchBarContentState extends State<_SearchBarContent> {
             ),
           ),
           
+          // Блок результатов (исправлен)
           BlocBuilder<SearchBloc, SearchState>(
             builder: (context, state) {
-              if (!state.isSearching && state.results.isEmpty) {
+              // Показываем блок если: есть результаты, или идет загрузка, или есть ошибка
+              final shouldShow = state.results.isNotEmpty || 
+                                 state.isLoading || 
+                                 (state.error != null && _controller.text.isNotEmpty);
+              
+              if (!shouldShow) {
                 return const SizedBox.shrink();
               }
               
@@ -122,14 +129,23 @@ class _SearchBarContentState extends State<_SearchBarContent> {
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      if (state.error != null)
+                      // Индикатор загрузки
+                      if (state.isLoading)
+                        const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      
+                      // Сообщение об ошибке (ничего не найдено)
+                      if (state.error != null && !state.isLoading && state.results.isEmpty)
                         Padding(
                           padding: const EdgeInsets.all(16),
                           child: Center(
@@ -140,25 +156,14 @@ class _SearchBarContentState extends State<_SearchBarContent> {
                           ),
                         ),
                       
+                      // Список результатов
                       ...state.results.map((result) => ListTile(
                         leading: const Icon(Icons.place, color: Colors.blue),
-                        title: Text(
-                          result.name,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
+                        title: Text(result.name),
                         subtitle: Text(
                           result.address,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios,
-                          size: 16,
-                          color: Colors.grey,
                         ),
                         onTap: () {
                           widget.onPlaceSelected(result);

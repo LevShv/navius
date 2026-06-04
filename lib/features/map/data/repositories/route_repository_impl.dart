@@ -42,12 +42,6 @@ class RouteRepositoryImpl implements RouteRepository{
     }
   }
 
-  @override
-  Future<List<NavigationStep>> getNavigationSteps(RouteInfo route) async {
-    //TODO получение маршркта по шагам 
-    throw UnimplementedError('Нужно сохранять шаги при первом запросе');
-  }
-
   List<RoutePoint> _parseCoordinates(List<dynamic> coordinates) {
     return coordinates.map<RoutePoint>((coord) {
       return RoutePoint(
