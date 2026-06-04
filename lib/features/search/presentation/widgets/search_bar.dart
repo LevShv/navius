@@ -51,7 +51,6 @@ class _SearchBarContentState extends State<_SearchBarContent> {
       right: 16,
       child: Column(
         children: [
-          // Поле поиска
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
