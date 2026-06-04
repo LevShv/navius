@@ -107,10 +107,8 @@ class _SearchBarContentState extends State<_SearchBarContent> {
             ),
           ),
           
-          // Блок результатов (исправлен)
           BlocBuilder<SearchBloc, SearchState>(
             builder: (context, state) {
-              // Показываем блок если: есть результаты, или идет загрузка, или есть ошибка
               final shouldShow = state.results.isNotEmpty || 
                                  state.isLoading || 
                                  (state.error != null && _controller.text.isNotEmpty);
@@ -135,7 +133,6 @@ class _SearchBarContentState extends State<_SearchBarContent> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      // Индикатор загрузки
                       if (state.isLoading)
                         const Padding(
                           padding: EdgeInsets.all(16),
@@ -144,7 +141,7 @@ class _SearchBarContentState extends State<_SearchBarContent> {
                           ),
                         ),
                       
-                      // Сообщение об ошибке (ничего не найдено)
+    
                       if (state.error != null && !state.isLoading && state.results.isEmpty)
                         Padding(
                           padding: const EdgeInsets.all(16),
@@ -156,7 +153,6 @@ class _SearchBarContentState extends State<_SearchBarContent> {
                           ),
                         ),
                       
-                      // Список результатов
                       ...state.results.map((result) => ListTile(
                         leading: const Icon(Icons.place, color: Colors.blue),
                         title: Text(result.name),
